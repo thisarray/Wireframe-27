@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>frogger</title>
+  <script src="../../jsgame0.js"></script>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+.hidden {
+  display: none;
+}
+#original {
+  margin-left: 1em;
+}
+  </style>
+</head>
+
+<body>
+<section id="imageLoader" class="hidden">
+  <img class="hidden" src="images/background.png" alt="background">
+  <img class="hidden" src="images/car1.png" alt="car1">
+  <img class="hidden" src="images/car2.png" alt="car2">
+  <img class="hidden" src="images/car3.png" alt="car3">
+  <img class="hidden" src="images/car4.png" alt="car4">
+  <img class="hidden" src="images/car5.png" alt="car5">
+  <img class="hidden" src="images/car6.png" alt="car6">
+  <img class="hidden" src="images/float1.png" alt="float1">
+  <img class="hidden" src="images/float2.png" alt="float2">
+  <img class="hidden" src="images/float3.png" alt="float3">
+  <img class="hidden" src="images/float4.png" alt="float4">
+  <img class="hidden" src="images/float5.png" alt="float5">
+  <img class="hidden" src="images/float6.png" alt="float6">
+  <img class="hidden" src="images/frog1.png" alt="frog1">
+  <img class="hidden" src="images/frog2.png" alt="frog2">
+</section>
+
+<main>
+<h1>frogger</h1>
+
+<canvas id="screen">
+The game screen appears here if your browser supports the Canvas API.
+</canvas>
+<section id="controls">
+  <button type="button" id="reset">Reset</button>
+  <button type="button" id="pause">Pause</button>
+</section>
+
+<h2>Attribution</h2>
+
+<p><a href="https://wireframe.raspberrypi.org/issues/27">Source Code: Code a Frogger-style road-crossing game, pages 40-41, by Mark Vanstone</a>.</p>
+
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/legalcode">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported</a>.</p>
+
+<h2>Original Python code</h2>
+
+<pre id="original"><code>
+# Frogger
+
+frog = Actor(&#x27;frog1&#x27;, center=(400, 580))
+frog.direction = frog.delay = 0
+frog.onBoard = -1
+cars = []
+floats = []
+gameState = count = 0
+for r in range(0, 6):
+    for c in range(0, 4):
+        cars.append(Actor(&#x27;car&#x27;+str(r+1), center=((r*20)+(c*(240-(r*10))), 540-(r*40))))
+        if r &lt; 5: floats.append(Actor(&#x27;float&#x27;+str(r+1), center=((r*20)+(c*(240-(r*10))), 260-(r*40))))
+
+def draw():
+    global count
+    screen.blit(&quot;background&quot;, (0, 0))
+    for c in range(0, 20):
+        floats[c].draw()
+    if gameState == 0 or (gameState == 1 and count%2 == 0): frog.draw()
+    for c in range(0, 24):
+        cars[c].draw()
+    count += 1
+
+def update():
+    global gameState
+    if gameState == 0:
+        frog.onBoard = -1
+        for r in range(0, 6):
+            s = -1
+            if r%2 == 0: s = 1
+            for c in range(0, 4):
+                i = (r*4)+c
+                cars[i].x += s
+                if cars[i].x &gt; 840: cars[i].x = -40
+                if cars[i].x &lt; -40: cars[i].x = 840
+                if cars[i].colliderect(frog): gameState = 1
+                if r &lt; 5:
+                    floats[i].x -= s
+                    if floats[i].x &gt; 880: floats[i].x = -80
+                    if floats[i].x &lt; -80: floats[i].x = 880
+                    if floats[i].colliderect(frog):
+                        frog.onBoard = i
+                        frog.x -= s
+        if frog.delay &gt; 0:
+            frog.delay += 1
+            if frog.delay &gt; 10:
+                frog.image = &quot;frog1&quot;
+                frog.angle = frog.direction
+        if frog.y &gt; 60 and frog.y &lt; 270 and frog.onBoard == -1: gameState = 1
+
+def on_key_down(key):
+    if gameState == 0:
+        if key.name == &quot;UP&quot;: frogMove(0,-40,0)
+        if key.name == &quot;DOWN&quot;: frogMove(0,40,180)
+        if key.name == &quot;LEFT&quot;: frogMove(-40,0,90)
+        if key.name == &quot;RIGHT&quot;: frogMove(40,0,270)
+
+def frogMove(x,y,d):
+    if 800 &gt; frog.x+x &gt; 0: frog.x += x
+    if 600 &gt; frog.y+y &gt; 0: frog.y += y
+    frog.image = &quot;frog2&quot;
+    frog.delay = 1
+    frog.angle = frog.direction = d
+</code></pre>
+</main>
+
+<script>
+// Frogger
+var frog, cars, floats, gameState, count;
+
+function reset() {
+  frog = new Actor('frog1');
+  frog.center = [400, 580];
+  frog.direction = 0;
+  frog.delay = 0;
+  frog.onBoard = -1;
+  cars = [];
+  floats = [];
+  gameState = 0;
+  count = 0;
+
+  for (let r = 0; r < 6; r++) {
+    for (let c = 0; c < 4; c++) {
+      let car = new Actor(`car${ r + 1 }`);
+      car.center = [(r * 20) + (c * (240 - (r * 10))), 540 - (r * 40)];
+      cars.push(car);
+
+      if (r < 5) {
+        let float = new Actor(`float${ r + 1 }`);
+        float.center = [(r * 20) + (c * (240 - (r * 10))), 260 - (r * 40)];
+        floats.push(float);
+      }
+    }
+  }
+}
+
+function draw() {
+  screen.blit("background", [0, 0]);
+  for (let c = 0; c < 20; c++) {
+    floats[c].draw();
+  }
+  if ((gameState === 0) || ((gameState === 1) && ((count % 2) === 0))) {
+    frog.draw();
+  }
+  for (let c = 0; c < 24; c++) {
+    cars[c].draw();
+  }
+  count += 1;
+}
+
+function update() {
+  if (gameState === 0) {
+    frog.onBoard = -1;
+    for (let r = 0; r < 6; r++) {
+      let s = -1;
+      if ((r % 2) === 0) {
+        s = 1;
+      }
+      for (let c = 0; c < 4; c++) {
+        let i = (r * 4) + c;
+        cars[i].posx += s;
+        if (cars[i].posx > 840) {
+          cars[i].posx = -40;
+        }
+        if (cars[i].posx < -40) {
+          cars[i].posx = 840;
+        }
+        if (cars[i].colliderect(frog)) {
+          gameState = 1;
+        }
+        if (r < 5) {
+          floats[i].posx -= s;
+          if (floats[i].posx > 880) {
+            floats[i].posx = -80;
+          }
+          if (floats[i].posx < -80) {
+            floats[i].posx = 880;
+          }
+          if (floats[i].colliderect(frog)) {
+            frog.onBoard = i;
+            frog.posx -= s;
+          }
+        }
+      }
+    }
+    if (frog.delay > 0) {
+      frog.delay += 1;
+      if (frog.delay > 10) {
+        frog.name = "frog1";
+        frog.angle = frog.direction;
+      }
+    }
+    if ((frog.posy > 60) && (frog.posy < 270) && (frog.onBoard === -1)) {
+      gameState = 1;
+    }
+  }
+}
+
+function on_key_down(key) {
+  if (gameState === 0) {
+    if (key === keys.UP) {
+      frogMove(0, -40, 0);
+    }
+    if (key === keys.DOWN) {
+      frogMove(0, 40, 180);
+    }
+    if (key === keys.LEFT) {
+      frogMove(-40, 0, 90);
+    }
+    if (key === keys.RIGHT) {
+      frogMove(40, 0, 270);
+    }
+  }
+}
+
+function frogMove(x, y, d) {
+  if ((0 < (frog.posx + x)) && ((frog.posx + x) < 800)) {
+    frog.posx += x;
+  }
+  if ((0 < (frog.posy + y)) && ((frog.posy + y) < 600)) {
+    frog.posy += y;
+  }
+  frog.name = "frog2";
+  frog.delay = 1;
+  frog.angle = d;
+  frog.direction = d;
+}
+
+window.addEventListener('load', (event) => {
+  images.LOAD('#imageLoader img');
+  reset();
+  screen.set_mode('#screen', '#reset', '#pause');
+});
+</script>
+</body>
+
+</html>
